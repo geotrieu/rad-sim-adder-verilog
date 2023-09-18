@@ -10,8 +10,8 @@
 `define AXIS_USERW 66
 `define AXIS_MAX_DATAW 1024
 
-`define DEST_ADDR 3
-`define SRC_ADDR 0
+`define DEST_ADDR `AXIS_DESTW'b11
+`define SRC_ADDR `AXIS_USERW'b0
  
 module client (
 	input clk,
@@ -59,9 +59,9 @@ module client (
 	 
 	 assign axis_client_interface_tdest = `DEST_ADDR;
 	 assign axis_client_interface_tuser = `SRC_ADDR;
-	 assign axis_client_interface_tid = 0;
-	 assign axis_client_interface_tstrb = 0;
-	 assign axis_client_interface_tkeep = 0;
+	 assign axis_client_interface_tid = {`AXIS_IDW{1'b0}};
+	 assign axis_client_interface_tstrb = {`AXIS_STRBW{1'b0}};
+	 assign axis_client_interface_tkeep = {`AXIS_KEEPW{1'b0}};
 	 assign axis_client_interface_tvalid = ~fifo_empty;
 	 assign axis_client_interface_tdata = fifo_data_out;
 	 assign axis_client_interface_tlast = axis_client_interface_tvalid && item_count == 0;
