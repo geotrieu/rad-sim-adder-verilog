@@ -1,35 +1,87 @@
 /* verilator lint_off BLKSEQ */
- 
-`define DATAW 128
- 
-module client (clk, rst, client_tdata, client_tlast, client_valid, axis_adder_interface_tready, client_ready, axis_adder_interface_tvalid, axis_adder_interface_tlast, axis_adder_interface_tdata);
-    input clk;
-    input rst;
-    input [`DATAW-1:0] client_tdata;
-    input client_tlast;
-    input client_valid;
-    input axis_adder_interface_tready;
-	 
-    output reg client_ready;
-    output reg axis_adder_interface_tvalid;
-    output reg axis_adder_interface_tlast;
-    output reg [`DATAW-1:0] axis_adder_interface_tdata;
+`define NOC_LINKS_DEST_WIDTH 4
+`define NOC_LINKS_PACKETID_WIDTH 32
 
-    reg client_fifo_full;
+`define DATAW 128
+`define AXIS_STRBW 8
+`define AXIS_KEEPW 8
+`define AXIS_IDW `NOC_LINKS_PACKETID_WIDTH
+`define AXIS_DESTW `NOC_LINKS_DEST_WIDTH
+`define AXIS_USERW 66
+`define AXIS_MAX_DATAW 1024
+
+`define DEST_ADDR 3
+`define SRC_ADDR 0
  
-    always @(rst, client_fifo_full) begin
-        if (rst) begin
-            client_ready <= 1'b1;
-        end else begin
-            client_ready <= ~client_fifo_full;
-        end
-    end
+module client (
+	input clk,
+	input rst,
+	input [`DATAW-1:0] client_tdata,
+	input client_tlast,
+	input client_valid,
+	input axis_client_interface_tready,
+	output client_ready,
+	output axis_client_interface_tvalid,
+	output axis_client_interface_tlast,
+	output [`AXIS_DESTW-1:0] axis_client_interface_tdest,
+	output [`AXIS_IDW-1:0] axis_client_interface_tid,
+	output [`AXIS_STRBW-1:0] axis_client_interface_tstrb,
+	output [`AXIS_KEEPW-1:0] axis_client_interface_tkeep,
+	output [`AXIS_USERW-1:0] axis_client_interface_tuser,
+	output [`DATAW-1:0] axis_client_interface_tdata
+);
+
+	 reg fifo_w_en;
+	 wire fifo_r_en;
+	 reg [`DATAW-1:0] fifo_data_in;
+	 
+	 wire [`DATAW-1:0] fifo_data_out;
+	 wire fifo_full;
+	 wire fifo_empty;
+	 
+	 integer item_count;
+	 
+	 // there is 2 clock cycle delays from the client receiving a LAST flag to when it is 
+	  
+	 fifo #(.DATA_WIDTH(`DATAW), .DEPTH(8)) client_tdata_fifo(
+		.clk(clk),
+		.rst(rst),
+		.w_enable(fifo_w_en),
+		.r_enable(fifo_r_en),
+		.data_in(fifo_data_in),
+		.data_out(fifo_data_out),
+		.full(fifo_full),
+		.empty(fifo_empty)
+	 );
+	 
+	 assign client_ready = ~fifo_full;
+	 assign fifo_r_en = axis_client_interface_tvalid && axis_client_interface_tready;
+	 
+	 assign axis_client_interface_tdest = `DEST_ADDR;
+	 assign axis_client_interface_tuser = `SRC_ADDR;
+	 assign axis_client_interface_tid = 0;
+	 assign axis_client_interface_tstrb = 0;
+	 assign axis_client_interface_tkeep = 0;
+	 assign axis_client_interface_tvalid = ~fifo_empty;
+	 assign axis_client_interface_tdata = fifo_data_out;
+	 assign axis_client_interface_tlast = axis_client_interface_tvalid && item_count == 0;
  
     always @(posedge clk) begin
         if (rst) begin
-            
+            item_count <= 0;
         end else begin
-
+				if (client_ready && client_valid) begin
+					// push data onto the FIFO
+					fifo_w_en <= 1;
+					fifo_data_in <= client_tdata;
+					item_count <= item_count + 1;
+				end else begin
+					fifo_w_en <= 0;
+				end
+				
+				if (axis_client_interface_tvalid && axis_client_interface_tready) begin
+					item_count <= item_count - 1;
+				end
         end
     end
 endmodule
