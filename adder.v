@@ -1,5 +1,3 @@
-/* verilator lint_off BLKSEQ */
- 
 `define DATAW 128
  
 module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast, axis_adder_interface_tdata, axis_adder_interface_tready);
@@ -18,9 +16,9 @@ module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast,
         if (rst) begin
             adder_rolling_sum = {`DATAW{1'b0}};
             t_finished = 1'b0;
-            axis_adder_interface_tready <= 1'b0;
+            axis_adder_interface_tready = 1'b0;
         end else begin
-            axis_adder_interface_tready <= 1'b1;
+            axis_adder_interface_tready = 1'b1;
         end
     end
  
@@ -36,5 +34,3 @@ module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast,
         end
     end
 endmodule
- 
-/* verilator lint_on BLKSEQ */
