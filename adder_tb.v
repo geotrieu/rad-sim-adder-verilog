@@ -10,6 +10,8 @@ reg [`DATAW-1:0] axis_adder_interface_tdata;
 
 wire axis_adder_interface_tready;
 
+integer i;
+
 adder my_adder(
 	.clk(clk),
 	.rst(rst),
@@ -28,16 +30,18 @@ initial
 begin
 	rst <= 1;
 	axis_adder_interface_tlast <= 1'b0;
-	#15 rst <= 0;
+	@(posedge clk);
+	rst <= 0;
 	
-	axis_adder_interface_tdata <= `DATAW'h1;
 	axis_adder_interface_tvalid <= 1'b1;
-	
-	#20 axis_adder_interface_tdata <= `DATAW'h2;
-	axis_adder_interface_tvalid <= 1'b1;
-	
-	#20 axis_adder_interface_tdata <= `DATAW'h3;
-	axis_adder_interface_tvalid <= 1'b1;
-	axis_adder_interface_tlast <= 1'b1;
+	for (i=1; i <= 17; i = i + 1) begin
+		axis_adder_interface_tdata <= i;
+		if (i == 17) begin
+			axis_adder_interface_tlast <= 1'b1;
+		end
+		@(posedge clk);
+	end
+ 	axis_adder_interface_tvalid <= 1'b0;
+	axis_adder_interface_tlast <= 1'b0;
 end
 endmodule

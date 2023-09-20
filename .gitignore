@@ -68,4 +68,5 @@ db/
 _output_files/
 simulation/
 output_files/
+verilator_files/
 PLLJ_PLLSPE_INFO.txt

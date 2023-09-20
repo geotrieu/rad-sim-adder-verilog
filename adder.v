@@ -1,11 +1,11 @@
-`define DATAW 128
+`include "static_params.vh"
  
 module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast, axis_adder_interface_tdata, axis_adder_interface_tready);
     input clk;
     input rst;
     input axis_adder_interface_tvalid;
     input axis_adder_interface_tlast;
-    input [`DATAW-1:0] axis_adder_interface_tdata;
+    input [`AXIS_MAX_DATAW-1:0] axis_adder_interface_tdata;
 	 
 	 output reg axis_adder_interface_tready;
  
@@ -24,6 +24,7 @@ module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast,
  
     always @(posedge clk) begin
         if (axis_adder_interface_tready && axis_adder_interface_tvalid) begin
+            $display("Adder: Received %d!", axis_adder_interface_tdata[63:0]);
             adder_rolling_sum = adder_rolling_sum + axis_adder_interface_tdata[`DATAW-1:0];
             t_finished = axis_adder_interface_tlast;
         end

@@ -1,13 +1,4 @@
-`define NOC_LINKS_DEST_WIDTH 4
-`define NOC_LINKS_PACKETID_WIDTH 32
-
-`define DATAW 128
-`define AXIS_STRBW 8
-`define AXIS_KEEPW 8
-`define AXIS_IDW `NOC_LINKS_PACKETID_WIDTH
-`define AXIS_DESTW `NOC_LINKS_DEST_WIDTH
-`define AXIS_USERW 66
-`define AXIS_MAX_DATAW 1024
+`include "static_params.vh"
 `timescale 1ns/10ps
 
 module client_tb;  
@@ -27,7 +18,7 @@ module client_tb;
 	wire [`AXIS_USERW-1:0] axis_client_interface_tuser;
 	wire [`DATAW-1:0] axis_client_interface_tdata;
 	
-	integer i;
+	integer i, j;
 	
 	client the_client(
 		clk,
@@ -58,18 +49,35 @@ module client_tb;
 	   client_valid <= 1'b0;
 	   client_tdata <= 0;
 		axis_client_interface_tready <= 0;
+		i <= 1;
 		@(posedge clk);
 	   rst <= 0;
 		
 		client_valid <= 1'b1;
-		axis_client_interface_tready <= 1'b1;
-	   for (i=1; i <= 3; i = i + 1) begin
+	   while (i <= 20) begin
 			client_tdata <= i;
-			if (i == 3) begin
+			if (i == 20) begin
 				client_tlast <= 1'b1;
 			end
+			
 			@(posedge clk);
+			
+			if (client_valid && client_ready) begin
+				i = i + 1;
+			end
 	   end
  	   client_valid <= 1'b0;
+	end
+	
+	initial begin
+		@(posedge clk);
+		
+		axis_client_interface_tready <= 1'b1;
+	   for (j=1; j <= 20; j = j + 1) begin
+			@(posedge clk);
+			axis_client_interface_tready <= 1'b0;
+			@(posedge clk);
+			axis_client_interface_tready <= 1'b1;
+	   end
 	end
 endmodule
