@@ -1,3 +1,6 @@
+// Client Module
+// George Trieu
+
 `include "static_params.vh"
 
 module client (
@@ -30,7 +33,7 @@ module client (
 	 
 	 // there is 2 clock cycle delays from the client receiving a LAST flag to when it is 
 	  
-	 fifo #(.DATA_WIDTH(`DATAW), .DEPTH(8)) client_tdata_fifo(
+	 fifo #(.DATA_WIDTH(`DATAW), .DEPTH(`FIFO_DEPTH)) client_tdata_fifo(
 		.clk(clk),
 		.rst(rst),
 		.w_enable(fifo_w_en),

@@ -4,6 +4,7 @@
 `define _static_params_vh_
 
 `define DATAW 128
+`define FIFO_DEPTH 8
 
 `define NOC_LINKS_DEST_WIDTH 4
 `define NOC_LINKS_PACKETID_WIDTH 32

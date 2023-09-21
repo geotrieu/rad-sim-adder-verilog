@@ -1,3 +1,6 @@
+// Adder Module
+// George Trieu
+
 `include "static_params.vh"
  
 module adder (clk, rst, axis_adder_interface_tvalid, axis_adder_interface_tlast, axis_adder_interface_tdata, axis_adder_interface_tready);
